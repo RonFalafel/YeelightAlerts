@@ -6,6 +6,7 @@ import requests
 import subprocess
 import platform
 import logging
+from logging.handlers import RotatingFileHandler
 import pystray
 from PIL import Image, ImageDraw
 from yeelight import Bulb, Flow, RGBTransition
@@ -30,6 +31,19 @@ logging.basicConfig(
     ]
 )
 
+# Setup verbose API logger
+api_logger = logging.getLogger("api_updates")
+api_logger.setLevel(logging.INFO)
+api_handler = RotatingFileHandler(
+    os.path.join(BASE_DIR, "API_updates.log"),
+    maxBytes=10*1024*1024,  # 10 MB limit per file
+    backupCount=5,          # Keep up to 5 old log files
+    encoding='utf-8'
+)
+api_handler.setFormatter(logging.Formatter('%(asctime)s - %(message)s'))
+api_logger.propagate = False  # Prevent these logs from bleeding into the main pikud_alerts.log
+api_logger.addHandler(api_handler)
+
 class AlertSystem:
     def __init__(self):
         self.config = self.load_config()
@@ -44,7 +58,7 @@ class AlertSystem:
         if os.path.exists(CONFIG_FILE):
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 return json.load(f)
-        return {"ip": "", "location": ""}
+        return {"ip": "", "location": "", "verbose_api_log": False}
 
     def save_config(self):
         with open(CONFIG_FILE, "w", encoding="utf-8") as f:
@@ -156,6 +170,9 @@ class AlertSystem:
                 data = {}
                 if response.status_code == 200 and clean_text:
                     data = json.loads(clean_text)
+
+                    if self.config.get("verbose_api_log"):
+                        api_logger.info(json.dumps(data, ensure_ascii=False))
 
                 if response.status_code == 200 and not api_connected:
                     logging.info("Successfully connected to Pikud Ha'Oref API. Monitoring active.")
