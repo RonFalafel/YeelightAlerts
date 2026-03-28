@@ -11,7 +11,7 @@
 
 - 🔵 **Early Warnings (התרעה מקדימה):** If an early warning is issued for your area, the bulb will flash blue 10 times and then return to normal.
 - 🔴 **Active Sirens (צבע אדום):** Turns your bulb blindingly bright red immediately upon an alert in your zone.
-- ⏳ **Official All-Clear Timer:** Automatically tracks when the siren disappears from the API, starts the mandatory 10-minute shelter countdown, and safely restores your bulb to its original color/power state when it's safe to leave.
+- ⏳ **Smart All-Clear System:** Listens for official "האירוע הסתיים" (Event Concluded) messages from the API to release you early. If no message is caught, it falls back to a 10-minute shelter countdown before safely restoring your bulb to its original color/power state.
 - 🖱️ **Silent Background Process:** Sits quietly in your Windows system tray (taskbar) with zero terminal windows or pop-ups.
 - 📝 **Live Configuration:** Update your location or IP address via a simple text file and reload it instantly from the taskbar.
 
@@ -58,7 +58,7 @@ Contributions are absolutely welcome! Whether you want to add support for other 
 **איך זה עובד?**
 * ברגע שיש **התרעה מקדימה** באזור שהגדרתם, הנורה תהבהב בצבע כחול 10 פעמים כדי להסב את תשומת ליבכם.
 * בזמן **אזעקת אמת**, הנורה תידלק מיד בצבע אדום בוהק.
-* הסקריפט מזהה מתי ההתרעה יורדת משרתי פיקוד העורף, מפעיל טיימר אוטומטי של 10 דקות (זמן ההמתנה הרשמי בממ"ד), ובסיומו מחזיר את הנורה בדיוק למצב ולצבע שהייתה בו לפני האזעקה!
+* ברגע שפיקוד העורף שולח הודעת "האירוע הסתיים", הסקריפט יכבה את האזעקה מיד. בנוסף, קיימת מערכת גיבוי המפעילה טיימר אוטומטי של 10 דקות מרגע ירידת ההתרעה במקרה שהודעת הסיום לא תואמת בדיוק את שם העיר שלכם, ובסיומו הנורה תחזור למצבה הרגיל.
 
 **שימו לב:** יש לוודא שהפעלתם "LAN Control" בהגדרות המנורה באפליקציה של Yeelight, אחרת הסקריפט לא יוכל לשלוט בה. כמו כן, הפרויקט נכתב באווירה טובה ("vibe-coded") בעזרת בינה מלאכותית – השתמשו בו ככלי עזר בלבד ואל תסתמכו עליו כתחליף לאפליקציה הרשמית של פיקוד העורף או לצופרים.
 

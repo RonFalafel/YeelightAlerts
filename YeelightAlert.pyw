@@ -35,6 +35,7 @@ class AlertSystem:
         self.config = self.load_config()
         self.bulb_state = None
         self.active_siren = False
+        self.last_early_warning_time = 0
         self.release_timer = None
         self.monitor_thread = threading.Thread(target=self.monitor_api, daemon=True)
         self.running = True
@@ -163,12 +164,25 @@ class AlertSystem:
                 if data:
                     alerts = data.get("data", [])
                     title = data.get("title", "")
+                    desc = data.get("desc", "")
 
-                    if self.config["location"] in alerts:
-                        if "התרעה מקדימה" in title:
-                            # Trigger only if we aren't already in a full red alert
-                            if not self.active_siren:
+                    # The message targets our exact configured location OR our location is mentioned in the text
+                    location_matched = self.config["location"] in alerts or self.config["location"] in desc or self.config["location"] in title
+
+                    if location_matched:
+                        if "מקדימה" in title or "מקדימה" in desc:
+                            # Trigger only if we aren't already in a full red alert and haven't triggered in the last 2 minutes
+                            if not self.active_siren and (time.time() - self.last_early_warning_time > 120):
+                                self.last_early_warning_time = time.time()
                                 self.trigger_early_warning()
+                        elif "הסתיים" in title or "הסתיים" in desc:
+                            if self.active_siren:
+                                logging.info("Received official 'All Clear' (האירוע הסתיים). Releasing early.")
+                                if self.release_timer:
+                                    self.release_timer.cancel()
+                                    self.release_timer = None
+                                self.handle_release()
+                                siren_in_api = False
                         else:
                             self.trigger_siren()
                             siren_in_api = True
