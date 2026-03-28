@@ -53,8 +53,8 @@ api_logger.addHandler(api_handler)
 class AlertSystem:
     def __init__(self):
         self.config = self.load_config()
-        self.bulb_state = None
-        self.active_siren = False
+        self.bulb_state = self.config.get("bulb_state")
+        self.active_siren = self.config.get("active_siren", False)
         self.last_early_warning_time = 0
         self.release_timer = None
         self.monitor_thread = threading.Thread(target=self.monitor_api, daemon=True)
@@ -84,6 +84,8 @@ class AlertSystem:
         if bulb:
             try:
                 self.bulb_state = bulb.get_properties()
+                self.config["bulb_state"] = self.bulb_state
+                self.save_config()
             except Exception as e:
                 logging.error(f"Failed to get bulb state: {e}")
 
@@ -145,6 +147,8 @@ class AlertSystem:
             logging.info("Siren received. Triggering Siren (Red)...")
             self.save_bulb_state()
             self.active_siren = True
+            self.config["active_siren"] = True
+            self.save_config()
 
         bulb = self.get_bulb()
         if bulb:
@@ -158,6 +162,8 @@ class AlertSystem:
     def handle_release(self):
         logging.info("Official release time reached. Restoring bulb state.")
         self.active_siren = False
+        self.config["active_siren"] = False
+        self.save_config()
         self.restore_bulb_state()
 
     def monitor_api(self):

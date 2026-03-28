@@ -3,3 +3,7 @@
 2026-03-28 19:19:15,414 - INFO - Test successful: Bulb flashed green.
 2026-03-28 20:58:50,068 - INFO - Siren received. Triggering Siren (Red)...
 2026-03-28 20:59:35,853 - INFO - Alert removed from API. Waiting 600 seconds for official release.
+2026-03-28 21:08:03,118 - INFO - Successfully connected to Pikud Ha'Oref API. Monitoring active.
+2026-03-28 21:08:08,685 - INFO - Testing connection to Yeelight bulb...
+2026-03-28 21:08:09,009 - INFO - Test successful: Bulb flashed green.
+2026-03-28 21:29:47,942 - INFO - Configuration reloaded.
