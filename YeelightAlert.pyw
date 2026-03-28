@@ -149,14 +149,18 @@ class AlertSystem:
 
             try:
                 response = requests.get(API_URL, headers=HEADERS, timeout=5)
+
+                # Pikud Ha'Oref API sometimes returns just a BOM (\ufeff) when there are no alerts.
+                clean_text = response.text.replace('\ufeff', '').strip()
+                data = {}
+                if response.status_code == 200 and clean_text:
+                    data = json.loads(clean_text)
+
                 if response.status_code == 200 and not api_connected:
                     logging.info("Successfully connected to Pikud Ha'Oref API. Monitoring active.")
                     api_connected = True
 
-                # Pikud Ha'Oref API sometimes returns just a BOM (\ufeff) when there are no alerts.
-                clean_text = response.text.replace('\ufeff', '').strip()
-                if response.status_code == 200 and clean_text:
-                    data = json.loads(clean_text)
+                if data:
                     alerts = data.get("data", [])
                     title = data.get("title", "")
 
