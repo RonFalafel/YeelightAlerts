@@ -1,0 +1,16 @@
+# Logs
+*.log
+*.log.*
+
+# Local Configuration
+pikud_config.json
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments and IDEs
+venv/
+.vscode/
+.idea/
