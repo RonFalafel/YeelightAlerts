@@ -11,7 +11,8 @@ from PIL import Image, ImageDraw
 from yeelight import Bulb, Flow, RGBTransition
 
 # Constants
-CONFIG_FILE = "pikud_config.json"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CONFIG_FILE = os.path.join(BASE_DIR, "pikud_config.json")
 API_URL = "https://www.oref.org.il/WarningMessages/alert/alerts.json"
 HEADERS = {
     "Referer": "https://www.oref.org.il/",
@@ -24,7 +25,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler("pikud_alerts.log", encoding='utf-8'),
+        logging.FileHandler(os.path.join(BASE_DIR, "pikud_alerts.log"), encoding='utf-8'),
         logging.StreamHandler()
     ]
 )
@@ -140,6 +141,7 @@ class AlertSystem:
 
     def monitor_api(self):
         siren_in_api = False
+        api_connected = False
         while self.running:
             if not self.config.get("location"):
                 time.sleep(5)
@@ -147,6 +149,10 @@ class AlertSystem:
 
             try:
                 response = requests.get(API_URL, headers=HEADERS, timeout=5)
+                if response.status_code == 200 and not api_connected:
+                    logging.info("Successfully connected to Pikud Ha'Oref API. Monitoring active.")
+                    api_connected = True
+
                 # API returns HTTP 200 with empty text when there are no alerts
                 if response.status_code == 200 and response.text.strip():
                     data = response.json()
@@ -177,8 +183,9 @@ class AlertSystem:
                     self.release_timer.start()
 
             except Exception as e:
-                # Silently catch network errors to keep the background thread alive
-                pass
+                if api_connected:
+                    logging.warning(f"Lost connection to Pikud Ha'Oref API: {e}. Retrying in background...")
+                    api_connected = False
             
             time.sleep(2)
 
