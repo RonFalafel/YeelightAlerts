@@ -22,6 +22,12 @@ HEADERS = {
 }
 RELEASE_TIMEOUT_SECONDS = 600  # 10 Minutes official release time
 
+# Official Alert Titles
+TITLE_EARLY_WARNING = "בדקות הקרובות צפויות להתקבל התרעות באזורך"
+TITLE_RELEASE = "האירוע הסתיים"
+TITLE_ROCKETS = "ירי רקטות וטילים"
+TITLE_UAV = "חדירת כלי טיס עוין"
+
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(levelname)s - %(message)s',
@@ -187,12 +193,12 @@ class AlertSystem:
                     location_matched = self.config["location"] in alerts or self.config["location"] in desc or self.config["location"] in title
 
                     if location_matched:
-                        if "מקדימה" in title or "מקדימה" in desc:
+                        if title == TITLE_EARLY_WARNING:
                             # Trigger only if we aren't already in a full red alert and haven't triggered in the last 2 minutes
                             if not self.active_siren and (time.time() - self.last_early_warning_time > 120):
                                 self.last_early_warning_time = time.time()
                                 self.trigger_early_warning()
-                        elif "הסתיים" in title or "הסתיים" in desc:
+                        elif title == TITLE_RELEASE:
                             if self.active_siren:
                                 logging.info("Received official 'All Clear' (האירוע הסתיים). Releasing early.")
                                 if self.release_timer:
@@ -200,7 +206,15 @@ class AlertSystem:
                                     self.release_timer = None
                                 self.handle_release()
                                 siren_in_api = False
+                        elif title in [TITLE_ROCKETS, TITLE_UAV]:
+                            self.trigger_siren()
+                            siren_in_api = True
+                            # Cancel release timer if it was running (in case of a new alert)
+                            if self.release_timer:
+                                self.release_timer.cancel()
+                                self.release_timer = None
                         else:
+                            # Fallback for unexpected alerts (e.g., Earthquake, Terrorist Infiltration)
                             self.trigger_siren()
                             siren_in_api = True
                             # Cancel release timer if it was running (in case of a new alert)
