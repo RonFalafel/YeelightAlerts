@@ -53,7 +53,8 @@ class AlertSystem:
             return None
         try:
             return Bulb(self.config["ip"])
-        except Exception:
+        except Exception as e:
+            logging.error(f"Failed to initialize bulb at {self.config.get('ip')}: {e}")
             return None
 
     def save_bulb_state(self):
@@ -183,9 +184,11 @@ class AlertSystem:
 
     def test_connection(self):
         logging.info("Testing connection to Yeelight bulb...")
+        # Automatically reload the config before testing
+        self.config = self.load_config()
         bulb = self.get_bulb()
         if not bulb:
-            logging.error("Test failed: Bulb IP not configured or invalid.")
+            logging.error(f"Test failed: Bulb IP '{self.config.get('ip')}' not configured or unreachable.")
             return
             
         try:
